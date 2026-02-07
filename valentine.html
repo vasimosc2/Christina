@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Για σένα, Χριστινάκι μου ❤️</title>
 
-  <!-- Confetti library -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <style>
@@ -30,7 +29,6 @@
       background: radial-gradient(circle at top, var(--bg2), var(--bg1));
       font-family: system-ui, sans-serif;
 
-      /* ✅ allow scrolling */
       overflow-y: auto;
       overflow-x: hidden;
       padding: 16px 16px 40px;
@@ -144,9 +142,11 @@
       display: block;
       box-shadow: 0 12px 22px rgba(0,0,0,.12);
       flex: 1 1 auto;
+
+      /* IMPORTANT so it can shrink between arrows on mobile */
+      min-width: 0;
     }
 
-    /* IMAGE + ARROWS ROW */
     .slide-row {
       display: flex;
       align-items: center;
@@ -155,7 +155,6 @@
       margin-top: 8px;
     }
 
-    /* ARROW BUTTONS */
     .arrow {
       width: 56px;
       height: 56px;
@@ -174,9 +173,6 @@
     }
     .arrow:hover { transform: translateY(-1px); }
     .arrow:active { transform: translateY(1px) scale(.98); }
-
-    /* small “disabled” look if you ever want it; not used now */
-    .arrow:disabled { opacity: .45; cursor: not-allowed; }
 
     .dots {
       display: flex;
@@ -199,21 +195,25 @@
       width: 18px;
     }
 
-    /* On very small screens, stack: image then arrows row */
+    /* ✅ MOBILE FIX: KEEP ARROWS LEFT/RIGHT */
     @media (max-width: 520px) {
       .slide-row {
-        flex-direction: column;
+        flex-direction: row;   /* force left/right */
+        gap: 8px;
       }
+
+      .arrow {
+        width: 46px;
+        height: 46px;
+        font-size: 18px;
+      }
+
       .fireworks {
-        width: min(560px, 92vw);
-      }
-      .arrows-row {
-        display: flex;
-        gap: 12px;
+        width: 100%;
+        height: clamp(210px, 55vw, 340px);
       }
     }
 
-    /* On normal screens, arrows are already left/right in slide-row */
     .arrows-row { display: contents; }
 
     @keyframes pop {
@@ -242,14 +242,12 @@
       <div class="caption" id="caption">Αλήθεια 🥹</div>
 
       <div class="slide-row">
-        <!-- Left arrow -->
         <div class="arrows-row">
           <button class="arrow" id="prevBtn" type="button" aria-label="Previous">◀</button>
         </div>
 
         <img class="fireworks" id="slideImg" src="images/Thessaloniki.jpg" alt="Slide image" />
 
-        <!-- Right arrow -->
         <div class="arrows-row">
           <button class="arrow" id="nextBtn" type="button" aria-label="Next">▶</button>
         </div>
@@ -260,7 +258,6 @@
   </main>
 
   <script>
-    // ---------- ENTRY GATE ----------
     const params = new URLSearchParams(window.location.search);
     const okFromQuery = params.get("ok") === "1";
     const okFromStorage = sessionStorage.getItem("valentine_ok") === "1";
@@ -279,20 +276,17 @@
     const result = document.getElementById("result");
     const hint = document.getElementById("hint");
 
-    // Slideshow elements
     const captionEl = document.getElementById("caption");
     const slideImg = document.getElementById("slideImg");
     const nextBtn = document.getElementById("nextBtn");
     const prevBtn = document.getElementById("prevBtn");
     const dotsEl = document.getElementById("dots");
 
-    // ✅ EDIT THESE: add your images + texts here
     const slides = [
       { text: "Αλήθεια 🥺?", img: "images/Thessaloniki.jpg" },
       { text: "Σε θέλω δίπλα μου ❤️", img: "images/Koufonisia.jpg" },
       { text: "Να κάνουμε πολλά ταξίδια μαζί ✈️", img: "images/Paris.jpg" },
       { text: "Το πιο όμορφο χαμόγελο 😍", img: "images/Rome.jpg" },
-      // { text: "Πάμε για ένα φιλί; 😘", img: "images/photo3.jpg" },
     ];
 
     let slideIndex = 0;
@@ -316,7 +310,6 @@
     nextBtn.addEventListener("click", () => showSlide(slideIndex + 1));
     prevBtn.addEventListener("click", () => showSlide(slideIndex - 1));
 
-    /* ---------- CONFETTI ---------- */
     const confettiCanvas = document.getElementById("confettiCanvas");
 
     function resizeConfettiCanvas() {
@@ -361,14 +354,12 @@
       }, 300);
     }
 
-    /* ---------- YES BUTTON GROWS ---------- */
     let yesScale = 1;
     function growYes() {
       yesScale = Math.min(2.2, yesScale + 0.1);
       yesBtn.style.transform = `translateY(-50%) scale(${yesScale})`;
     }
 
-    /* ---------- NO BUTTON RUNS AWAY ---------- */
     function clamp(n, min, max) {
       return Math.max(min, Math.min(max, n));
     }
@@ -407,7 +398,6 @@
 
     noBtn.addEventListener("click", e => e.preventDefault());
 
-    /* ---------- YES CLICK ---------- */
     yesBtn.addEventListener("click", () => {
       zone.style.display = "none";
       hint.style.display = "none";
