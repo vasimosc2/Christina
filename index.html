@@ -3,18 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Will you be my Valentine?</title>
-
-  <!-- Confetti library -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <title>Enter Password</title>
 
   <style>
     :root {
       --bg1: #ffd6e7;
       --bg2: #ffeef6;
       --card: #ffffffcc;
-      --yes: #ff3b7a;
-      --yesHover: #ff1f68;
+      --accent: #ff3b7a;
+      --accentHover: #ff1f68;
     }
 
     * { box-sizing: border-box; }
@@ -30,18 +27,8 @@
       padding: 16px;
     }
 
-    /* FULL-SCREEN CONFETTI CANVAS */
-    #confettiCanvas {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 9999;
-    }
-
     .card {
-      width: min(720px, 92vw);
+      width: min(520px, 92vw);
       padding: 26px 22px;
       background: var(--card);
       backdrop-filter: blur(10px);
@@ -50,223 +37,101 @@
       box-shadow: 0 18px 60px rgba(0,0,0,.15);
     }
 
-    .art {
-      width: min(260px, 80vw);
-      margin: 0 auto 10px;
-      display: block;
-      filter: drop-shadow(0 10px 14px rgba(0,0,0,.12));
-    }
-
     h1 {
-      font-size: clamp(26px, 4vw, 44px);
-      margin: 12px 0 18px;
+      font-size: clamp(24px, 3.6vw, 34px);
+      margin: 8px 0 14px;
     }
 
-    .button-zone {
-      position: relative;
-      width: min(520px, 92%);
-      height: 150px;
-      margin: 0 auto;
-      touch-action: none;
+    p {
+      margin: 0 0 16px;
+      opacity: .75;
+    }
+
+    .row {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.12);
+      font-size: 16px;
+      outline: none;
     }
 
     button {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      padding: 16px 24px;
-      font-size: 18px;
-      font-weight: 800;
+      padding: 14px 16px;
       border-radius: 999px;
       border: none;
+      font-size: 16px;
+      font-weight: 800;
       cursor: pointer;
+      background: var(--accent);
+      color: white;
       box-shadow: 0 10px 24px rgba(0,0,0,.14);
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
       transition: transform .12s ease, background .12s ease;
     }
 
-    #yesBtn {
-      left: 18%;
-      background: var(--yes);
-      color: #fff;
-    }
-    #yesBtn:hover { background: var(--yesHover); }
+    button:hover { background: var(--accentHover); }
+    button:active { transform: scale(.98); }
 
-    #noBtn {
-      left: 62%;
-      background: #e5e7eb;
-      color: #111827;
-    }
-
-    .hint {
-      margin-top: 10px;
-      font-size: 13px;
-      opacity: .7;
-    }
-
-    .result {
+    .error {
       display: none;
-      margin-top: 18px;
-      animation: pop .35s ease;
+      margin-top: 10px;
+      color: #b91c1c;
+      font-weight: 700;
     }
 
-    .result h2 {
-      font-size: clamp(30px, 4.5vw, 46px);
-      margin: 10px 0;
-    }
-
-    .fireworks {
-      width: min(380px, 90vw);
-      margin: 0 auto;
-      display: block;
-    }
-
-    @keyframes pop {
-      from { transform: scale(.96); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
+    .tiny {
+      margin-top: 14px;
+      font-size: 12px;
+      opacity: .6;
     }
   </style>
 </head>
 
 <body>
-  <canvas id="confettiCanvas"></canvas>
-
   <main class="card">
-    <!-- ANIMAL WITH HEART -->
-    <img
-      class="art"
-      src="images/Edimburg.jpg"
-      alt="Valentine image"
-    />
+    <h1>🔒 Password</h1>
+    <p>Enter the secret code to continue</p>
 
-    <h1>Μ'αγαπάς βρε Χριστινάκι ???</h1>
+    <div class="row">
+      <input id="pw" type="password" placeholder="Password..." autocomplete="off" />
+      <button id="go">Enter</button>
+    </div>
 
-    <section class="button-zone" id="zone">
-      <button id="yesBtn">Yes</button>
-      <button id="noBtn">No</button>
-    </section>
-
-    <!-- HINT -->
-    <div class="hint" id="hint">“No” seems a bit shy 😈</div>
-
-    <section class="result" id="result">
-      <h2>YAY! 🎉</h2>
-      <img
-        class="fireworks"
-        src="images/Rome.jpg"
-        alt="Fireworks"
-      />
-    </section>
+    <div class="error" id="err">Wrong password 😈</div>
+    <div class="tiny">Hint: it’s a 4-digit number</div>
   </main>
 
   <script>
-    const zone = document.getElementById("zone");
-    const yesBtn = document.getElementById("yesBtn");
-    const noBtn = document.getElementById("noBtn");
-    const result = document.getElementById("result");
-    const hint = document.getElementById("hint");
+    const pw = document.getElementById("pw");
+    const go = document.getElementById("go");
+    const err = document.getElementById("err");
 
-    /* ---------- CONFETTI ---------- */
-    const confettiCanvas = document.getElementById("confettiCanvas");
+    const CORRECT = "2525";
+    const TARGET_PAGE = "valentine.html";
 
-    function resizeConfettiCanvas() {
-      const dpr = Math.max(1, window.devicePixelRatio || 1);
-      confettiCanvas.width = Math.floor(window.innerWidth * dpr);
-      confettiCanvas.height = Math.floor(window.innerHeight * dpr);
-      confettiCanvas.style.width = "100vw";
-      confettiCanvas.style.height = "100vh";
+    function check() {
+      if (pw.value === CORRECT) {
+        err.style.display = "none";
+        // Remember for this browser session so valentine.html can verify
+        sessionStorage.setItem("valentine_ok", "1");
+        window.location.href = TARGET_PAGE + "?ok=1";
+      } else {
+        err.style.display = "block";
+        pw.focus();
+        pw.select();
+      }
     }
 
-    resizeConfettiCanvas();
-    window.addEventListener("resize", resizeConfettiCanvas);
-    window.addEventListener("orientationchange", () => setTimeout(resizeConfettiCanvas, 150));
-
-    const confettiInstance = confetti.create(confettiCanvas, {
-      resize: false,
-      useWorker: true
-    });
-
-    function fullScreenConfetti() {
-      const end = Date.now() + 1600;
-
-      (function frame() {
-        confettiInstance({
-          particleCount: 12,
-          spread: 90,
-          startVelocity: 45,
-          ticks: 180,
-          origin: { x: Math.random(), y: Math.random() * 0.3 }
-        });
-        if (Date.now() < end) requestAnimationFrame(frame);
-      })();
-
-      setTimeout(() => {
-        confettiInstance({
-          particleCount: 300,
-          spread: 140,
-          startVelocity: 60,
-          ticks: 220,
-          origin: { x: 0.5, y: 0.55 }
-        });
-      }, 300);
-    }
-
-    /* ---------- YES BUTTON GROWS ---------- */
-    let yesScale = 1;
-    function growYes() {
-      yesScale = Math.min(2.2, yesScale + 0.1);
-      yesBtn.style.transform = `translateY(-50%) scale(${yesScale})`;
-    }
-
-    /* ---------- NO BUTTON RUNS AWAY ---------- */
-    function clamp(n, min, max) {
-      return Math.max(min, Math.min(max, n));
-    }
-
-    function moveNo(px, py) {
-      const z = zone.getBoundingClientRect();
-      const b = noBtn.getBoundingClientRect();
-
-      let dx = (b.left + b.width / 2) - px;
-      let dy = (b.top + b.height / 2) - py;
-      let mag = Math.hypot(dx, dy) || 1;
-      dx /= mag;
-      dy /= mag;
-
-      let newLeft = (b.left - z.left) + dx * 150;
-      let newTop  = (b.top - z.top) + dy * 150;
-
-      newLeft = clamp(newLeft, 0, z.width - b.width);
-      newTop  = clamp(newTop, 0, z.height - b.height);
-
-      noBtn.style.left = newLeft + "px";
-      noBtn.style.top = newTop + "px";
-      noBtn.style.transform = "none";
-
-      growYes();
-    }
-
-    zone.addEventListener("pointermove", e => {
-      const b = noBtn.getBoundingClientRect();
-      const d = Math.hypot(
-        (b.left + b.width / 2) - e.clientX,
-        (b.top + b.height / 2) - e.clientY
-      );
-      if (d < 140) moveNo(e.clientX, e.clientY);
-    });
-
-    noBtn.addEventListener("click", e => e.preventDefault());
-
-    /* ---------- YES CLICK ---------- */
-    yesBtn.addEventListener("click", () => {
-      zone.style.display = "none";
-      hint.style.display = "none";     // HIDE THE HINT
-      result.style.display = "block";
-      resizeConfettiCanvas();
-      fullScreenConfetti();
+    go.addEventListener("click", check);
+    pw.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") check();
     });
   </script>
 </body>
 </html>
-
